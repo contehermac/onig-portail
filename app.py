@@ -8,6 +8,7 @@
 
 from pathlib import Path
 
+import hmac
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -444,13 +445,25 @@ PAGES_AUTORITE = PAGES_INVEST + ["Analyse avancee", "Qualite des donnees",
                                  "Donnees & indicateurs"]
 DROITS = {"Grand public": PAGES_PUBLIC, "Investisseurs et bailleurs (PTF)": PAGES_INVEST,
           "Pouvoirs publics": PAGES_AUTORITE}
-COMPTES = {
-    "investisseur": {"mdp": "invest2025",
-                     "profil": "Investisseurs et bailleurs (PTF)"},
-    "bailleur": {"mdp": "bailleur2025",
-                 "profil": "Investisseurs et bailleurs (PTF)"},
-    "autorite": {"mdp": "autorite2025", "profil": "Pouvoirs publics"},
-}
+# Les comptes de demonstration ne figurent pas dans le code : ils sont lus
+# dans les "secrets" de l'application (Streamlit Cloud > Settings > Secrets,
+# ou fichier local .streamlit/secrets.toml exclu du depot). Aucun identifiant
+# n'est donc publie avec le code source.
+def charger_comptes():
+    try:
+        brut = dict(st.secrets["comptes"])
+    except Exception:
+        return {}
+    comptes = {}
+    for identifiant, champs in brut.items():
+        profil = str(champs.get("profil", "")).strip()
+        mdp = str(champs.get("mdp", ""))
+        if profil in DROITS and mdp:
+            comptes[identifiant.strip().lower()] = {"mdp": mdp, "profil": profil}
+    return comptes
+
+
+COMPTES = charger_comptes()
 
 if "profil" not in st.session_state:
     st.session_state["profil"] = "Grand public"
@@ -467,7 +480,8 @@ if st.session_state["profil"] == "Grand public":
     mdp = st.sidebar.text_input("Mot de passe", type="password")
     if st.sidebar.button("Se connecter", use_container_width=True):
         c = COMPTES.get(ident.strip().lower())
-        if c and c["mdp"] == mdp:
+        # comparaison a duree constante : ne revele pas la longueur du mot de passe
+        if c and hmac.compare_digest(str(c["mdp"]), str(mdp)):
             st.session_state["profil"] = c["profil"]
             st.rerun()
         else:
@@ -972,11 +986,30 @@ def page_qualite():
     st.plotly_chart(styliser(fig, 560, legende=True), use_container_width=True)
 
     st.dataframe(q, use_container_width=True, hide_index=True)
-    st.warning("**Limites identifiees** — Quatre indicateurs presentent une completude "
-               "insuffisante (jours d'arret de production, coupures d'electricite, part "
-               "des femmes dans l'emploi, emissions de CO2). Leur collecte devra etre "
-               "renforcee aupres des sources administratives avant toute exploitation "
-               "decisionnelle.")
+
+    # Le texte des limites est CALCULE, jamais fige : il suit toujours le
+    # nombre reellement affiche dans la carte « Indicateurs a renforcer ».
+    faibles = q[q["Niveau"] == "Insuffisante"].sort_values("Completude (%)")
+    if len(faibles):
+        liste = ", ".join(f"{r['Indicateur'].split(' (')[0].lower()} "
+                          f"({nb_fr(r['Completude (%)'], 1)} %)"
+                          for _, r in faibles.iterrows())
+        accord = "indicateur presente" if len(faibles) == 1 else "indicateurs presentent"
+        st.warning(f"**Limites identifiees** — {len(faibles)} {accord} une completude "
+                   f"inferieure a 50 % des observations : {liste}. Leur collecte devra "
+                   "etre renforcee avant toute exploitation decisionnelle. Ces "
+                   "indicateurs n'etant produits par aucune source administrative "
+                   "existante, leur alimentation suppose une collecte primaire aupres "
+                   "des unites industrielles.")
+    else:
+        st.success("**Aucun indicateur** ne presente une completude inferieure a 50 %.")
+
+    a_surveiller = q[q["Niveau"] == "A surveiller"]
+    if len(a_surveiller):
+        liste2 = ", ".join(f"{r['Indicateur'].split(' (')[0].lower()} "
+                           f"({nb_fr(r['Completude (%)'], 1)} %)"
+                           for _, r in a_surveiller.iterrows())
+        st.info(f"**A surveiller** — completude comprise entre 50 et 80 % : {liste2}.")
 
 
 # =====================================================================
