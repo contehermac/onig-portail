@@ -218,6 +218,7 @@ def styliser(fig, hauteur=360, legende=False, grille_x=False, grille_y=False):
         hoverlabel=dict(bgcolor=SURFACE, font_size=12, font_family=POLICE,
                         bordercolor=BORDURE),
         bargap=0.32,
+        separators=", ",   # virgule decimale, espace pour les milliers
     )
     fig.update_xaxes(showgrid=grille_x, gridcolor=GRILLE, gridwidth=1, zeroline=False,
                      linecolor=GRILLE, tickfont=dict(color=ENCRE_MUET, size=11),
@@ -293,23 +294,23 @@ LIBELLES = {
     "taux_utilisation_capacite_pct": "Taux d'utilisation des capacités (%)",
     "part_femmes_emploi_pct": "Part des femmes dans l'emploi (%)",
     "accidents_travail_declares": "Accidents du travail déclarés",
-    "emissions_co2_tonnes": "Emissions de CO2 (tonnes)",
+    "emissions_co2_tonnes": "Émissions de CO2 (tonnes)",
     "conformite_fiscale_pct": "Conformité fiscale (%)",
     "maturite_numerique_score_100": "Maturité numérique (/100)",
 }
 
 DIMENSIONS = {
+    # Cinq dimensions alignees sur le memoire (3.3 et tableau 4, section 4.4.2)
     "Activité économique": ["nb_entreprises_actives", "chiffre_affaires_milliards_gnf",
                             "valeur_ajoutee_milliards_gnf", "exportations_milliards_gnf",
                             "investissement_milliards_gnf"],
-    "Emploi et social": ["emploi_direct", "part_femmes_emploi_pct",
-                         "accidents_travail_declares"],
+    "Emploi et conditions sociales": ["emploi_direct", "part_femmes_emploi_pct",
+                                      "accidents_travail_declares"],
     "Production et capacité": ["indice_production_industrielle",
                                "taux_utilisation_capacite_pct", "jours_arret_production"],
-    "Conformité et environnement": ["conformite_fiscale_pct", "emissions_co2_tonnes",
-                                    "consommation_energie_mwh", "consommation_eau_m3",
-                                    "coupures_electricite_heures"],
-    "Transformation numérique": ["maturite_numerique_score_100"],
+    "Énergie et environnement": ["consommation_energie_mwh", "consommation_eau_m3",
+                                 "coupures_electricite_heures", "emissions_co2_tonnes"],
+    "Conformité et maturité": ["conformite_fiscale_pct", "maturite_numerique_score_100"],
 }
 
 
@@ -533,7 +534,7 @@ def page_accueil():
     if ca_prec > 0:
         v = (ca - ca_prec) / ca_prec * 100
         cls = "hausse" if v >= 0 else "baisse"
-        var = f'<span class="{cls}">{v:+.1f} %</span> vs {annee_choisie-1}'
+        var = f'<span class="{cls}">{v:+.1f} %</span> vs {annee_choisie-1}'.replace('.', ',')
     else:
         var = "année de référence"
 
@@ -546,7 +547,7 @@ def page_accueil():
          f"{len(regions_choisies)} régions · {len(secteurs_choisis)} secteurs"),
         ("Emploi direct", formater(_emp), "emplois recensés"),
         ("Chiffre d'affaires", formater(ca), "milliards GNF"),
-        ("Évolution du CA", f"{(ca-ca_prec)/ca_prec*100:+.1f} %" if ca_prec else "—", var),
+        ("Évolution du CA", f"{(ca-ca_prec)/ca_prec*100:+.1f} %".replace(".", ",") if ca_prec else "—", var),
     ])
 
     c1, c2 = st.columns(2)
@@ -652,10 +653,21 @@ def page_presentation():
         "- **Sectorielles** — chambres de commerce, associations professionnelles")
 
     section("Les cinq dimensions d'indicateurs")
-    st.dataframe(pd.DataFrame([
-        {"Dimension": d, "Indicateurs": ", ".join(LIBELLES[c] for c in cols)}
-        for d, cols in DIMENSIONS.items()]),
-        use_container_width=True, hide_index=True)
+    # Tableau HTML (et non st.dataframe) : le texte long passe a la ligne au lieu
+    # d'etre coupe au bord de la colonne.
+    lignes = "".join(
+        f"<tr><td style='padding:8px 12px;border-top:1px solid #E6E3DD;"
+        f"white-space:nowrap;vertical-align:top'>{d}</td>"
+        f"<td style='padding:8px 12px;border-top:1px solid #E6E3DD'>"
+        f"{', '.join(LIBELLES[c] for c in cols)}</td></tr>"
+        for d, cols in DIMENSIONS.items())
+    st.markdown(
+        "<table style='width:100%;border-collapse:collapse;background:#FFFFFF;"
+        "border:1px solid #E6E3DD;border-radius:8px;font-size:0.92rem'>"
+        "<tr style='color:#6B675F;text-align:left'>"
+        "<th style='padding:8px 12px;font-weight:500'>Dimension</th>"
+        "<th style='padding:8px 12px;font-weight:500'>Indicateurs</th></tr>"
+        + lignes + "</table>", unsafe_allow_html=True)
 
     section("Accès différenciés")
     st.dataframe(pd.DataFrame([
@@ -799,7 +811,7 @@ def page_fiche():
     with c1:
         section("Répartition du chiffre d'affaires par secteur")
         d = (d_reg.groupby("secteur_industriel")["chiffre_affaires_milliards_gnf"]
-             .sum().sort_values(ascending=False).reset_index())
+             .sum(min_count=1).dropna().sort_values(ascending=False).reset_index())
         st.plotly_chart(barres_h(d, "chiffre_affaires_milliards_gnf",
                                  "secteur_industriel"), use_container_width=True)
     with c2:
@@ -826,7 +838,12 @@ def page_fiche():
     ind = st.radio("Indicateur", ["chiffre_affaires_milliards_gnf", "emploi_direct",
                                   "nb_entreprises_actives"],
                    format_func=lambda c: LIBELLES[c], horizontal=True)
-    d = df[df["region"] == region].groupby("annee")[ind].sum().reset_index()
+    # Une annee dont une valeur sectorielle manque n'a pas de total fiable :
+    # on ne la trace pas (au lieu d'afficher une chute artificielle).
+    g = df[df["region"] == region].groupby("annee")[ind]
+    d = pd.DataFrame({"total": g.sum(), "manquantes": g.apply(lambda x: x.isna().sum())})
+    d.loc[d["manquantes"] > 0, "total"] = np.nan
+    d = d.rename(columns={"total": ind}).reset_index()
     fig = px.line(d, x="annee", y=ind, markers=True)
     fig.update_traces(line=dict(color=BAUXITE, width=2),
                       marker=dict(size=9, color=BAUXITE,
@@ -835,6 +852,12 @@ def page_fiche():
     fig.update_layout(xaxis_title="", yaxis_title=LIBELLES[ind])
     fig.update_xaxes(dtick=1)
     st.plotly_chart(styliser(fig, 320, grille_y=True), use_container_width=True)
+    inc = d.loc[d[ind].isna(), "annee"].tolist()
+    if inc:
+        st.caption("Total non calculé pour " + ", ".join(str(a) for a in inc) +
+                   " : au moins une valeur sectorielle est manquante dans l'entrepôt "
+                   "(voir la page Qualité des données). Le point n'est pas tracé "
+                   "pour ne pas suggérer une baisse qui n'existe pas.")
 
 
 # =====================================================================
@@ -842,7 +865,7 @@ def page_fiche():
 # =====================================================================
 def page_dimensions():
     entete("Dimensions complémentaires",
-           "Emploi, production, environnement et transformation numérique")
+           "Emploi, production, énergie et environnement, conformité et maturité")
 
     dim = st.selectbox("Dimension", list(DIMENSIONS.keys()))
     for col in DIMENSIONS[dim]:
@@ -901,10 +924,12 @@ def page_avancee():
     corr = df[ind].corr().round(2)
     noms = [LIBELLES[c].split(" (")[0] for c in ind]
     corr.index, corr.columns = noms, noms
-    fig = px.imshow(corr, text_auto=True, aspect="auto",
+    texte_r = corr.apply(lambda col: col.map(
+        lambda v: f"{v:.2f}".replace(".", ",").replace("-", "−"))).values
+    fig = px.imshow(corr, aspect="auto",
                     color_continuous_scale=DIVERGENTE, zmin=-1, zmax=1)
-    fig.update_traces(textfont=dict(size=10),
-                      hovertemplate="<b>%{y}</b><br>%{x}<br>r = %{z}<extra></extra>")
+    fig.update_traces(text=texte_r, texttemplate="%{text}", textfont=dict(size=10),
+                      hovertemplate="<b>%{y}</b><br>%{x}<br>r = %{text}<extra></extra>")
     fig.update_layout(xaxis_title="", yaxis_title="",
                       coloraxis_colorbar=dict(title="r", thickness=10))
     fig.update_xaxes(tickangle=-40)
@@ -930,6 +955,7 @@ def page_avancee():
     fig = px.scatter(seg, x="chiffre_affaires_milliards_gnf", y="emploi_direct",
                      color="profil", text="region", size="nb_entreprises_actives",
                      size_max=42, color_discrete_map=COULEURS_PROFIL,
+                     category_orders={"profil": list(COULEURS_PROFIL)},
                      labels={"chiffre_affaires_milliards_gnf": "CA moyen (Mds GNF)",
                              "emploi_direct": "Emploi direct moyen"})
     fig.update_traces(textposition="top center",
@@ -943,7 +969,7 @@ def page_avancee():
     st.markdown("**Composition des trois profils**")
     st.dataframe(pd.DataFrame([
         {"Profil": p, "Régions": ", ".join(seg[seg.profil == p]["region"]),
-         "CA moyen (Mds GNF)": round(seg[seg.profil == p]
+         "CA moyen (Mds GNF)": nb_fr(seg[seg.profil == p]
                                      ["chiffre_affaires_milliards_gnf"].mean())}
         for p in COULEURS_PROFIL]), use_container_width=True, hide_index=True)
 
@@ -973,7 +999,7 @@ def page_qualite():
     carte_kpi([
         ("Observations", formater(len(df)), "lignes du jeu de données"),
         ("Indicateurs suivis", str(len(LIBELLES)), "variables documentées"),
-        ("Complétude moyenne", f"{q['Complétude (%)'].mean():.1f} %", "toutes variables"),
+        ("Complétude moyenne", f"{nb_fr(q['Complétude (%)'].mean(), 1)} %", "toutes variables"),
         ("Indicateurs à renforcer", str(n_ins), "complétude inférieure à 50 %"),
     ])
 
@@ -990,13 +1016,18 @@ def page_qualite():
     fig.update_xaxes(showticklabels=False, showgrid=False)
     st.plotly_chart(styliser(fig, 560, legende=True), use_container_width=True)
 
-    st.dataframe(q, use_container_width=True, hide_index=True)
+    # Tableau entierement deplie (pas de defilement interne) et decimales a la francaise
+    q_aff = q.assign(**{"Complétude (%)": [nb_fr(v, 1) for v in q["Complétude (%)"]]})
+    st.dataframe(q_aff, use_container_width=True, hide_index=True,
+                 height=35 * (len(q_aff) + 1) + 3,
+                 column_config={"Complétude (%)": st.column_config.TextColumn(
+                     "Complétude (%)", width="small")})
 
     # Le texte des limites est CALCULE, jamais fige : il suit toujours le
     # nombre reellement affiche dans la carte « Indicateurs a renforcer ».
     faibles = q[q["Niveau"] == "Insuffisante"].sort_values("Complétude (%)")
     if len(faibles):
-        liste = ", ".join(f"{r['Indicateur'].split(' (')[0].lower()} "
+        liste = ", ".join(f"{(lambda t: t[0].lower() + t[1:])(r['Indicateur'].split(' (')[0])} "
                           f"({nb_fr(r['Complétude (%)'], 1)} %)"
                           for _, r in faibles.iterrows())
         accord = "indicateur présente" if len(faibles) == 1 else "indicateurs présentent"
@@ -1011,7 +1042,7 @@ def page_qualite():
 
     a_surveiller = q[q["Niveau"] == "À surveiller"]
     if len(a_surveiller):
-        liste2 = ", ".join(f"{r['Indicateur'].split(' (')[0].lower()} "
+        liste2 = ", ".join(f"{(lambda t: t[0].lower() + t[1:])(r['Indicateur'].split(' (')[0])} "
                            f"({nb_fr(r['Complétude (%)'], 1)} %)"
                            for _, r in a_surveiller.iterrows())
         st.info(f"**À surveiller** — complétude comprise entre 50 et 80 % : {liste2}.")
@@ -1025,15 +1056,27 @@ def page_donnees():
 
     section("Table des données")
     st.caption(f"{len(df_filtre)} lignes correspondant aux filtres actifs.")
-    st.dataframe(df_filtre, use_container_width=True, height=420)
+    # Affichage lisible : libelles en clair, decimales a la francaise,
+    # valeur manquante notee n.d. ; l'export CSV garde les noms de colonnes bruts.
+    aff = df_filtre.copy()
+    for c in LIBELLES:
+        if c in aff.columns:
+            dec = 0 if c in ("nb_entreprises_actives", "emploi_direct",
+                             "accidents_travail_declares", "jours_arret_production") else 1
+            aff[c] = [("n.d." if pd.isna(v) else nb_fr(float(v), dec)) for v in aff[c]]
+    aff = aff.rename(columns={**LIBELLES, "annee": "Année", "region": "Région",
+                              "region_naturelle": "Région naturelle",
+                              "secteur_industriel": "Secteur"})
+    aff = aff[[c for c in aff.columns if not c.startswith("id_")]]
+    st.dataframe(aff, use_container_width=True, height=420, hide_index=True)
     st.download_button("⬇️  Télécharger ces données (CSV)",
                        df_filtre.to_csv(index=False).encode("utf-8"),
                        "donnees_observatoire.csv", "text/csv")
 
     section("Dictionnaire des variables")
-    st.dataframe(pd.DataFrame([{"Variable": k, "Libellé": v}
-                               for k, v in LIBELLES.items()]),
-                 use_container_width=True, hide_index=True)
+    dico = pd.DataFrame([{"Variable": k, "Libellé": v} for k, v in LIBELLES.items()])
+    st.dataframe(dico, use_container_width=True, hide_index=True,
+                 height=35 * (len(dico) + 1) + 3)
 
 
 # =====================================================================
