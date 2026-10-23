@@ -755,16 +755,21 @@ def page_analyse():
     st.plotly_chart(styliser(fig, 320, grille_y=True), use_container_width=True)
 
     section(f"Croisement {'region' if champ_geo=='region' else 'region naturelle'} × secteur")
-    pivot = df_annee.pivot_table(index=champ_geo, columns="secteur_industriel",
-                                 values=col, aggfunc="sum")
-    fig = px.imshow(pivot, text_auto=".0f", aspect="auto",
-                    color_continuous_scale=RAMPE_BAUXITE)
-    fig.update_traces(textfont=dict(size=10),
-                      hovertemplate="<b>%{y}</b><br>%{x}<br>%{z:,.0f}<extra></extra>")
+    # min_count=1 : une case sans aucune valeur renseignee reste vide (NaN)
+    # au lieu d'etre comptee comme un zero, ce qui fausserait la lecture.
+    pivot = (df_annee.groupby([champ_geo, "secteur_industriel"])[col]
+             .sum(min_count=1).unstack())
+    texte = np.where(pivot.isna(), "n.d.",
+                     pivot.round(0).fillna(0).astype(int).astype(str).values)
+    fig = px.imshow(pivot, aspect="auto", color_continuous_scale=RAMPE_BAUXITE)
+    fig.update_traces(text=texte, texttemplate="%{text}", textfont=dict(size=10),
+                      hovertemplate="<b>%{y}</b><br>%{x}<br>%{text}<extra></extra>")
     fig.update_layout(xaxis_title="", yaxis_title="",
                       coloraxis_colorbar=dict(title="", thickness=10))
     st.plotly_chart(styliser(fig, 420), use_container_width=True)
-    st.caption(f"Lecture : plus la case est foncee, plus « {titre} » est eleve.")
+    st.caption(f"Lecture : plus la case est foncee, plus « {titre} » est eleve. "
+               "n.d. : donnee non disponible (valeur manquante dans l'entrepot, "
+               "voir la page Qualite des donnees).")
 
 
 # =====================================================================
