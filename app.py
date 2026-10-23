@@ -40,7 +40,7 @@ if not _CONFIG.exists():
         pass
 
 st.set_page_config(
-    page_title="Observatoire National de l'Industrie - Guinee",
+    page_title="Observatoire National de l'Industrie - Guinée",
     page_icon="🏭",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -73,16 +73,16 @@ RAMPE_BAUXITE = ["#F7EDE6", "#EBD3C2", "#DDB79D", "#CB9776",
 # Palette categorielle validee (separation daltonisme verifiee)
 CAT = ["#2A78D6", "#EB6834", "#1BAF7A"]
 COULEURS_PROFIL = {
-    "Poles industriels majeurs": CAT[0],
-    "Regions intermediaires": CAT[1],
-    "Regions moins industrialisees": CAT[2],
+    "Pôles industriels majeurs": CAT[0],
+    "Régions intermédiaires": CAT[1],
+    "Régions moins industrialisées": CAT[2],
 }
 
 # Divergente (correlations) : bleu <-> gris neutre <-> rouge
 DIVERGENTE = [[0.0, "#2A78D6"], [0.5, "#F0EFEC"], [1.0, "#E34948"]]
 
 # Statut (qualite des donnees) - jamais utilise comme couleur de serie
-STATUT = {"Bonne": "#0CA30C", "A surveiller": "#FAB219", "Insuffisante": "#D03B3B"}
+STATUT = {"Bonne": "#0CA30C", "À surveiller": "#FAB219", "Insuffisante": "#D03B3B"}
 
 POLICE = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
 
@@ -262,7 +262,7 @@ def section(titre):
 
 
 def carte_kpi(cartes):
-    """cartes = liste de (libelle, valeur, sous-texte html ou '')"""
+    """cartes = liste de (libellé, valeur, sous-texte html ou '')"""
     html = '<div class="kpi-rangee">'
     for lib, val, sub in cartes:
         html += (f'<div class="kpi"><div class="lib">{lib}</div>'
@@ -283,33 +283,33 @@ LIBELLES = {
     "emploi_direct": "Emploi direct",
     "indice_production_industrielle": "Indice de production industrielle",
     "chiffre_affaires_milliards_gnf": "Chiffre d'affaires (Mds GNF)",
-    "valeur_ajoutee_milliards_gnf": "Valeur ajoutee (Mds GNF)",
+    "valeur_ajoutee_milliards_gnf": "Valeur ajoutée (Mds GNF)",
     "exportations_milliards_gnf": "Exportations (Mds GNF)",
     "investissement_milliards_gnf": "Investissement (Mds GNF)",
-    "consommation_energie_mwh": "Consommation d'energie (MWh)",
-    "consommation_eau_m3": "Consommation d'eau (m3)",
-    "jours_arret_production": "Jours d'arret de production",
-    "coupures_electricite_heures": "Coupures d'electricite (heures)",
-    "taux_utilisation_capacite_pct": "Taux d'utilisation des capacites (%)",
+    "consommation_energie_mwh": "Consommation d'énergie (MWh)",
+    "consommation_eau_m3": "Consommation d'eau (m³)",
+    "jours_arret_production": "Jours d'arrêt de production",
+    "coupures_electricite_heures": "Coupures d'électricité (heures)",
+    "taux_utilisation_capacite_pct": "Taux d'utilisation des capacités (%)",
     "part_femmes_emploi_pct": "Part des femmes dans l'emploi (%)",
-    "accidents_travail_declares": "Accidents du travail declares",
+    "accidents_travail_declares": "Accidents du travail déclarés",
     "emissions_co2_tonnes": "Emissions de CO2 (tonnes)",
-    "conformite_fiscale_pct": "Conformite fiscale (%)",
-    "maturite_numerique_score_100": "Maturite numerique (/100)",
+    "conformite_fiscale_pct": "Conformité fiscale (%)",
+    "maturite_numerique_score_100": "Maturité numérique (/100)",
 }
 
 DIMENSIONS = {
-    "Activite economique": ["nb_entreprises_actives", "chiffre_affaires_milliards_gnf",
+    "Activité économique": ["nb_entreprises_actives", "chiffre_affaires_milliards_gnf",
                             "valeur_ajoutee_milliards_gnf", "exportations_milliards_gnf",
                             "investissement_milliards_gnf"],
     "Emploi et social": ["emploi_direct", "part_femmes_emploi_pct",
                          "accidents_travail_declares"],
-    "Production et capacite": ["indice_production_industrielle",
+    "Production et capacité": ["indice_production_industrielle",
                                "taux_utilisation_capacite_pct", "jours_arret_production"],
-    "Conformite et environnement": ["conformite_fiscale_pct", "emissions_co2_tonnes",
+    "Conformité et environnement": ["conformite_fiscale_pct", "emissions_co2_tonnes",
                                     "consommation_energie_mwh", "consommation_eau_m3",
                                     "coupures_electricite_heures"],
-    "Transformation numerique": ["maturite_numerique_score_100"],
+    "Transformation numérique": ["maturite_numerique_score_100"],
 }
 
 
@@ -326,8 +326,8 @@ COLONNES_REQUISES = ["annee", "region", "secteur_industriel",
 
 
 def empreinte(chemin):
-    """Taille + date de modification : change des que le fichier est remplace.
-    Sert de cle de cache, sinon de nouvelles donnees resteraient invisibles."""
+    """Taille + date de modification : change des que le fichier est remplacé.
+    Sert de cle de cache, sinon de nouvelles données resteraient invisibles."""
     p = Path(chemin)
     return (p.stat().st_size, p.stat().st_mtime) if p.exists() else None
 
@@ -347,9 +347,9 @@ REQUETE_ENTREPOT = """
 
 @st.cache_data
 def charger_donnees(chemin, _empreinte):
-    """Lit l'entrepot : la table de faits jointe a ses trois dimensions.
-    Le resultat a exactement la meme forme que l'ancien fichier a plat, de
-    sorte que le reste du portail est inchange."""
+    """Lit l'entrepôt : la table de faits jointe à ses trois dimensions.
+    Le resultat a exactement la meme forme que l'ancien fichier à plat, de
+    sorte que le reste du portail est inchangé."""
     import sqlite3
     con = sqlite3.connect(chemin)
     d = pd.read_sql_query(REQUETE_ENTREPOT, con)
@@ -363,8 +363,8 @@ def formater(n):
 
 @st.cache_data
 def image_simandou():
-    """Cherche une photo nommee 'simandou' dans le dossier de l'application.
-    Si aucune n'est trouvee, un visuel graphique de repli est utilise."""
+    """Cherche une photo nommée 'simandou' dans le dossier de l'application.
+    Si aucune n'est trouvée, un visuel graphique de repli est utilisé."""
     import base64
     for nom in ("simandou.jpg", "simandou.jpeg", "simandou.png", "simandou.webp"):
         p = Path(nom)
@@ -378,7 +378,7 @@ def image_simandou():
 def bloc_simandou():
     """Bandeau defilant + visuel du Programme Simandou 2040 (bas de page)."""
     texte = ("Programme Simandou 2040 &nbsp;·&nbsp; Transformation structurelle "
-             "de l'economie guineenne &nbsp;·&nbsp; Valorisation locale des "
+             "de l'économie guinéenne &nbsp;·&nbsp; Valorisation locale des "
              "ressources &nbsp;·&nbsp; Diversification du tissu industriel "
              "&nbsp;·&nbsp; ")
     st.markdown(f'<div class="bandeau-defilant"><span>{texte * 2}</span></div>',
@@ -402,15 +402,15 @@ def bloc_simandou():
             f'<div class="visuel-repli">{relief}'
             '<h3>Programme Simandou 2040</h3>'
             "<p>L'observatoire s'inscrit dans la perspective de transformation "
-            "structurelle portee par le Programme Simandou 2040 : valorisation "
-            "locale des ressources, developpement des chaines de valeur "
+            "structurelle portée par le Programme Simandou 2040 : valorisation "
+            "locale des ressources, développement des chaînes de valeur "
             "industrielles et diversification du tissu productif national.</p>"
             '</div>', unsafe_allow_html=True)
 
 
 if not Path(ENTREPOT).exists():
-    st.error(f"Entrepot de donnees introuvable : « {ENTREPOT} ». "
-             "Construisez-le en lancant `python etl_observatoire.py` dans ce "
+    st.error(f"Entrepôt de données introuvable : « {ENTREPOT} ». "
+             "Construisez-le en lançant `python etl_observatoire.py` dans ce "
              "dossier, puis relancez le portail.")
     st.stop()
 
@@ -422,10 +422,10 @@ REGIONS_NATURELLES = (df[["region", "region_naturelle"]].drop_duplicates()
 
 _manquantes = [c for c in COLONNES_REQUISES if c not in df.columns]
 if _manquantes:
-    st.error("Colonnes obligatoires absentes du fichier de donnees : "
+    st.error("Colonnes obligatoires absentes du fichier de données : "
              + ", ".join(_manquantes)
              + ". Renommez-les dans le fichier source, ou adaptez le "
-               "dictionnaire LIBELLES en tete de ce script.")
+               "dictionnaire LIBELLES en tête de ce script.")
     st.stop()
 
 # Seuls les indicateurs reellement presents sont exploites : le portail
@@ -439,10 +439,10 @@ DIMENSIONS = {d: cols for d, cols in DIMENSIONS.items() if cols}
 #  3. ACCES DIFFERENCIES (chapitre 3.1.4)
 # =====================================================================
 PAGES_PUBLIC = ["Accueil", "L'Observatoire"]
-PAGES_INVEST = PAGES_PUBLIC + ["Analyse regionale & sectorielle", "Fiche regionale",
-                               "Dimensions complementaires"]
-PAGES_AUTORITE = PAGES_INVEST + ["Analyse avancee", "Qualite des donnees",
-                                 "Donnees & indicateurs"]
+PAGES_INVEST = PAGES_PUBLIC + ["Analyse régionale & sectorielle", "Fiche régionale",
+                               "Dimensions complémentaires"]
+PAGES_AUTORITE = PAGES_INVEST + ["Analyse avancée", "Qualité des données",
+                                 "Données & indicateurs"]
 DROITS = {"Grand public": PAGES_PUBLIC, "Investisseurs et bailleurs (PTF)": PAGES_INVEST,
           "Pouvoirs publics": PAGES_AUTORITE}
 # Les comptes de demonstration ne figurent pas dans le code : ils sont lus
@@ -469,13 +469,13 @@ if "profil" not in st.session_state:
     st.session_state["profil"] = "Grand public"
 
 st.sidebar.markdown("# 🏭 Observatoire")
-st.sidebar.caption("National de l'Industrie — Guinee")
+st.sidebar.caption("National de l'Industrie — Guinée")
 st.sidebar.divider()
 
 if st.session_state["profil"] == "Grand public":
     st.sidebar.markdown("**🔐 Espace utilisateur**")
-    st.sidebar.caption("Acces libre aux donnees agregees. "
-                       "Connectez-vous pour les analyses detaillees.")
+    st.sidebar.caption("Accès libre aux données agrégées. "
+                       "Connectez-vous pour les analyses détaillées.")
     ident = st.sidebar.text_input("Identifiant")
     mdp = st.sidebar.text_input("Mot de passe", type="password")
     if st.sidebar.button("Se connecter", use_container_width=True):
@@ -487,8 +487,8 @@ if st.session_state["profil"] == "Grand public":
         else:
             st.sidebar.error("Identifiant ou mot de passe incorrect.")
 else:
-    st.sidebar.success(f"Connecte : {st.session_state['profil']}")
-    if st.sidebar.button("Se deconnecter", use_container_width=True):
+    st.sidebar.success(f"Connecté : {st.session_state['profil']}")
+    if st.sidebar.button("Se déconnecter", use_container_width=True):
         st.session_state["profil"] = "Grand public"
         st.rerun()
 
@@ -497,16 +497,16 @@ st.sidebar.divider()
 page = st.sidebar.radio("Navigation", DROITS[profil])
 
 if _THEME_CREE:
-    st.sidebar.info("Theme de l'observatoire installe. Arretez l'application "
+    st.sidebar.info("Thème de l'observatoire installé. Arrêtez l'application "
                     "(Ctrl + C) et relancez `streamlit run app.py` pour "
-                    "l'appliquer — a faire une seule fois.")
+                    "l'appliquer — à faire une seule fois.")
 
 st.sidebar.divider()
 st.sidebar.subheader("Filtres")
 annees = sorted(df["annee"].unique())
-annee_choisie = st.sidebar.selectbox("Annee", annees, index=len(annees) - 1)
+annee_choisie = st.sidebar.selectbox("Année", annees, index=len(annees) - 1)
 regions = sorted(df["region"].unique())
-regions_choisies = st.sidebar.multiselect("Region(s)", regions, default=regions)
+regions_choisies = st.sidebar.multiselect("Région(s)", regions, default=regions)
 secteurs = sorted(df["secteur_industriel"].unique())
 secteurs_choisis = st.sidebar.multiselect("Secteur(s)", secteurs, default=secteurs)
 
@@ -521,9 +521,9 @@ df_filtre = df[df["region"].isin(regions_choisies)
 #  PAGE : ACCUEIL
 # =====================================================================
 def page_accueil():
-    entete("Observatoire National de l'Industrie de Guinee",
-           f"Systeme d'information decisionnel · donnees {annees[0]}–{annees[-1]} "
-           f"· annee affichee : {annee_choisie}")
+    entete("Observatoire National de l'Industrie de Guinée",
+           f"Système d'information décisionnel · données {annees[0]}–{annees[-1]} "
+           f"· année affichée : {annee_choisie}")
 
     ca = df_annee["chiffre_affaires_milliards_gnf"].sum()
     prec = df[(df["annee"] == annee_choisie - 1)
@@ -535,7 +535,7 @@ def page_accueil():
         cls = "hausse" if v >= 0 else "baisse"
         var = f'<span class="{cls}">{v:+.1f} %</span> vs {annee_choisie-1}'
     else:
-        var = "annee de reference"
+        var = "année de référence"
 
     _ent = df_annee["nb_entreprises_actives"].sum() if \
         "nb_entreprises_actives" in df.columns else float("nan")
@@ -543,15 +543,15 @@ def page_accueil():
         "emploi_direct" in df.columns else float("nan")
     carte_kpi([
         ("Entreprises actives", formater(_ent),
-         f"{len(regions_choisies)} regions · {len(secteurs_choisis)} secteurs"),
-        ("Emploi direct", formater(_emp), "emplois recenses"),
+         f"{len(regions_choisies)} régions · {len(secteurs_choisis)} secteurs"),
+        ("Emploi direct", formater(_emp), "emplois recensés"),
         ("Chiffre d'affaires", formater(ca), "milliards GNF"),
-        ("Evolution du CA", f"{(ca-ca_prec)/ca_prec*100:+.1f} %" if ca_prec else "—", var),
+        ("Évolution du CA", f"{(ca-ca_prec)/ca_prec*100:+.1f} %" if ca_prec else "—", var),
     ])
 
     c1, c2 = st.columns(2)
     with c1:
-        section(f"Chiffre d'affaires par region · {annee_choisie}")
+        section(f"Chiffre d'affaires par région · {annee_choisie}")
         d = (df_annee.groupby("region")["chiffre_affaires_milliards_gnf"]
              .sum().sort_values(ascending=False).reset_index())
         st.plotly_chart(barres_h(d, "chiffre_affaires_milliards_gnf", "region"),
@@ -563,7 +563,7 @@ def page_accueil():
         st.plotly_chart(barres_h(d, "chiffre_affaires_milliards_gnf",
                                  "secteur_industriel"), use_container_width=True)
 
-    section(f"Evolution du chiffre d'affaires · {annees[0]}–{annees[-1]}")
+    section(f"Évolution du chiffre d'affaires · {annees[0]}–{annees[-1]}")
     d = df_filtre.groupby("annee")["chiffre_affaires_milliards_gnf"].sum().reset_index()
     fig = px.line(d, x="annee", y="chiffre_affaires_milliards_gnf", markers=True)
     fig.update_traces(line=dict(color=BAUXITE, width=2),
@@ -575,10 +575,10 @@ def page_accueil():
     st.plotly_chart(styliser(fig, 320, grille_y=True), use_container_width=True)
 
     if profil == "Grand public":
-        st.info("Vous consultez l'observatoire en acces libre (donnees agregees). "
-                "Les analyses detaillees sont accessibles aux investisseurs et "
-                "partenaires sur inscription, et l'ensemble des analyses avancees "
-                "aux pouvoirs publics authentifies — voir « Espace utilisateur » "
+        st.info("Vous consultez l'observatoire en accès libre (données agrégées). "
+                "Les analyses détaillées sont accessibles aux investisseurs et "
+                "partenaires sur inscription, et l'ensemble des analyses avancées "
+                "aux pouvoirs publics authentifiés — voir « Espace utilisateur » "
                 "dans le menu de gauche.")
 
     bloc_simandou()
@@ -588,66 +588,66 @@ def page_accueil():
 #  PAGE : L'OBSERVATOIRE
 # =====================================================================
 def page_presentation():
-    entete("L'Observatoire", "Mission, architecture, sources et regles d'acces")
+    entete("L'Observatoire", "Mission, architecture, sources et règles d'accès")
 
     section("Mission")
-    st.write("L'Observatoire National de l'Industrie de Guinee a pour mission de "
+    st.write("L'Observatoire National de l'Industrie de Guinée a pour mission de "
              "centraliser, structurer, analyser et diffuser l'information relative au "
-             "secteur industriel guineen, afin d'eclairer la decision publique, "
+             "secteur industriel guinéen, afin d'éclairer la décision publique, "
              "d'orienter les investisseurs et d'informer le grand public.")
 
     section("Objectifs")
     st.markdown(
         "- Identifier les besoins informationnels des parties prenantes\n"
-        "- Inventorier et evaluer les sources de donnees disponibles\n"
-        "- Concevoir l'architecture technique du systeme decisionnel\n"
-        "- Definir les regles de gouvernance des donnees\n"
-        "- Mettre a disposition un portail de diffusion\n"
-        "- Proposer un jeu d'indicateurs sectoriels de reference")
+        "- Inventorier et évaluer les sources de données disponibles\n"
+        "- Concevoir l'architecture technique du système décisionnel\n"
+        "- Définir les règles de gouvernance des données\n"
+        "- Mettre à disposition un portail de diffusion\n"
+        "- Proposer un jeu d'indicateurs sectoriels de référence")
 
-    section("Architecture du systeme d'information decisionnel")
+    section("Architecture du système d'information décisionnel")
     for col, (t, d) in zip(st.columns(4), [
         ("1 · Collecte", "Identifiant unique par entreprise, uniformisation des formats"),
-        ("2 · Entrepot", "Stockage et organisation par annee, region et secteur"),
-        ("3 · Analyse", "Calcul des agregats et des indicateurs"),
-        ("4 · Diffusion", "Portail avec acces differencies selon les publics")]):
+        ("2 · Entrepôt", "Stockage et organisation par année, région et secteur"),
+        ("3 · Analyse", "Calcul des agrégats et des indicateurs"),
+        ("4 · Diffusion", "Portail avec accès différenciés selon les publics")]):
         col.markdown(
             f'<div class="kpi"><div class="lib">{t}</div>'
             f'<div class="sub" style="font-size:.85rem;margin-top:.4rem">{d}</div></div>',
             unsafe_allow_html=True)
 
-    section("Ancrage national et strategique")
+    section("Ancrage national et stratégique")
     st.write(
         "L'observatoire s'inscrit dans le cadre de la politique industrielle de la "
-        "Republique de Guinee et, en particulier, dans la perspective de "
-        "transformation structurelle portee par le **Programme Simandou 2040**, qui "
+        "République de Guinée et, en particulier, dans la perspective de "
+        "transformation structurelle portée par le **Programme Simandou 2040**, qui "
         "vise la valorisation locale des ressources et la diversification du tissu "
-        "industriel. Place sous la tutelle du ministere en charge de l'industrie, il "
-        "a vocation a s'articuler avec l'ecosysteme economique national — Chambre de "
-        "Commerce, d'Industrie et d'Artisanat de Guinee, organisations patronales, "
+        "industriel. Placé sous la tutelle du ministère en charge de l'industrie, il "
+        "a vocation à s'articuler avec l'écosystème économique national — Chambre de "
+        "Commerce, d'Industrie et d'Artisanat de Guinée, organisations patronales, "
         "institutions de financement et partenaires techniques et financiers — qui "
-        "sont a la fois fournisseurs de donnees et utilisateurs des analyses "
+        "sont à la fois fournisseurs de données et utilisateurs des analyses "
         "produites.")
 
     section("Conventions territoriales")
     st.write(
-        "Les analyses sont conduites a deux mailles : les **8 regions "
-        "administratives** et les **4 regions naturelles**, qui traduisent mieux les "
-        "realites economiques du pays. Le rattachement retenu est le suivant :")
+        "Les analyses sont conduites à deux mailles : les **8 régions "
+        "administratives** et les **4 régions naturelles**, qui traduisent mieux les "
+        "réalités économiques du pays. Le rattachement retenu est le suivant :")
     st.dataframe(pd.DataFrame([
-        {"Region naturelle": rn,
-         "Regions administratives": ", ".join(
+        {"Région naturelle": rn,
+         "Régions administratives": ", ".join(
              sorted(r for r, v in REGIONS_NATURELLES.items() if v == rn))}
         for rn in ORDRE_NATUREL]), use_container_width=True, hide_index=True)
-    st.caption("Ce rattachement est applique de maniere uniforme a l'ensemble "
-               "des analyses du portail. Il est porte par la table de dimension "
-               "Dim_Region de l'entrepot de donnees.")
+    st.caption("Ce rattachement est appliqué de manière uniforme à l'ensemble "
+               "des analyses du portail. Il est porté par la table de dimension "
+               "Dim_Region de l'entrepôt de données.")
 
-    section("Sources de donnees")
+    section("Sources de données")
     st.markdown(
         "- **Institutionnelles** — Institut National de la Statistique, Direction "
         "Nationale de l'Industrie, agences de promotion des investissements\n"
-        "- **Administratives** — Douanes, EDG, ministeres des Mines et du Commerce, "
+        "- **Administratives** — Douanes, EDG, ministères des Mines et du Commerce, "
         "Environnement, Travail\n"
         "- **Sectorielles** — chambres de commerce, associations professionnelles")
 
@@ -657,45 +657,45 @@ def page_presentation():
         for d, cols in DIMENSIONS.items()]),
         use_container_width=True, hide_index=True)
 
-    section("Acces differencies")
+    section("Accès différenciés")
     st.dataframe(pd.DataFrame([
-        {"Profil": "Grand public", "Acces": "Libre, sans inscription",
-         "Perimetre": "Donnees agregees et presentation de l'observatoire"},
+        {"Profil": "Grand public", "Accès": "Libre, sans inscription",
+         "Périmètre": "Données agrégées et présentation de l'observatoire"},
         {"Profil": "Investisseurs et bailleurs de fonds (PTF)",
-         "Acces": "Sur inscription",
-         "Perimetre": "Analyses detaillees par region, secteur et dimension"},
-        {"Profil": "Pouvoirs publics", "Acces": "Authentifie",
-         "Perimetre": "Acces complet : analyses avancees, qualite, export"}]),
+         "Accès": "Sur inscription",
+         "Périmètre": "Analyses détaillées par région, secteur et dimension"},
+        {"Profil": "Pouvoirs publics", "Accès": "Authentifié",
+         "Périmètre": "Accès complet : analyses avancées, qualité, export"}]),
         use_container_width=True, hide_index=True)
-    st.caption("Le mecanisme d'authentification implemente ici a valeur de "
-               "demonstration : il illustre la logique d'acces differencies decrite "
-               "dans l'architecture, sans constituer un dispositif de securite de "
+    st.caption("Le mécanisme d'authentification implémenté ici a valeur de "
+               "démonstration : il illustre la logique d'accès différenciés décrite "
+               "dans l'architecture, sans constituer un dispositif de sécurité de "
                "niveau production.")
 
-    st.warning("**Note methodologique** — Ce portail est un prototype academique "
-               "realise dans le cadre d'un memoire de Master. Il ne constitue pas "
-               "un site officiel de la Republique de Guinee. Les donnees affichees "
-               "sont issues d'un jeu synthetique construit pour la demonstration "
-               "(240 observations, 8 regions, 6 secteurs, 2021-2025) et ne "
+    st.warning("**Note méthodologique** — Ce portail est un prototype académique "
+               "réalisé dans le cadre d'un mémoire de Master. Il ne constitue pas "
+               "un site officiel de la République de Guinée. Les données affichées "
+               "sont issues d'un jeu synthétique construit pour la démonstration "
+               "(240 observations, 8 régions, 6 secteurs, 2021-2025) et ne "
                "constituent pas des statistiques officielles.")
 
-    section("Chaine de traitement")
+    section("Chaîne de traitement")
     st.write(
-        "Les donnees affichees ne sont pas lues dans un fichier : elles sont "
-        "extraites d'un **entrepot de donnees** structure en schema en etoile "
-        "(une table de faits au grain region x secteur x annee, reliee aux "
-        "dimensions Region, Secteur et Annee). Cet entrepot est alimente par une "
-        "chaine ETL qui extrait le fichier source brut, le nettoie et le charge. "
-        "Les quatre couches de l'architecture — collecte, pretraitement, stockage "
-        "et diffusion — sont donc effectivement traversees a chaque consultation.")
+        "Les données affichées ne sont pas lues dans un fichier : elles sont "
+        "extraites d'un **entrepôt de données** structuré en schéma en étoile "
+        "(une table de faits au grain région x secteur x année, reliée aux "
+        "dimensions Région, Secteur et Année). Cet entrepôt est alimenté par une "
+        "chaîne ETL qui extrait le fichier source brut, le nettoie et le charge. "
+        "Les quatre couches de l'architecture — collecte, prétraitement, stockage "
+        "et diffusion — sont donc effectivement traversées à chaque consultation.")
 
 
 # =====================================================================
 #  PAGE : ANALYSE REGIONALE & SECTORIELLE
 # =====================================================================
 def page_analyse():
-    entete("Analyse regionale & sectorielle",
-           f"Comparaison des territoires et des branches · annee {annee_choisie}")
+    entete("Analyse régionale & sectorielle",
+           f"Comparaison des territoires et des branches · année {annee_choisie}")
 
     g1, g2 = st.columns([2, 1])
     with g1:
@@ -704,18 +704,18 @@ def page_analyse():
                               "valeur_ajoutee_milliards_gnf",
                               "investissement_milliards_gnf",
                               "nb_entreprises_actives"] if c in df.columns]
-        col = st.selectbox("Indicateur analyse", _choix,
+        col = st.selectbox("Indicateur analysé", _choix,
                            format_func=lambda c: LIBELLES[c])
     with g2:
         maille = st.radio("Maille territoriale",
-                          ["Regions administratives (8)", "Regions naturelles (4)"],
+                          ["Régions administratives (8)", "Régions naturelles (4)"],
                           horizontal=False)
     titre = LIBELLES[col]
-    champ_geo = "region" if maille.startswith("Regions a") else "region_naturelle"
+    champ_geo = "region" if maille.startswith("Régions a") else "region_naturelle"
 
     c1, c2 = st.columns(2)
     with c1:
-        section(f"{titre} — par {'region' if champ_geo=='region' else 'region naturelle'}")
+        section(f"{titre} — par {'région' if champ_geo=='region' else 'région naturelle'}")
         d = (df_annee.groupby(champ_geo)[col].sum()
              .sort_values(ascending=False).reset_index())
         st.plotly_chart(barres_h(d, col, champ_geo), use_container_width=True)
@@ -737,13 +737,13 @@ def page_analyse():
     if ca_t > 0 and ex_t > 0 and not mine.empty:
         p_ca = mine["chiffre_affaires_milliards_gnf"].sum() / ca_t * 100
         p_ex = mine["exportations_milliards_gnf"].sum() / ex_t * 100
-        st.info(f"**Eclairage — poids du secteur minier ({annee_choisie}).** "
-                f"La transformation miniere represente {p_ca:.0f} % du chiffre "
+        st.info(f"**Éclairage — poids du secteur minier ({annee_choisie}).** "
+                f"La transformation minière représente {p_ca:.0f} % du chiffre "
                 f"d'affaires industriel mais {p_ex:.0f} % des exportations : "
-                "le secteur est nettement plus tourne vers l'exterieur que la "
-                "moyenne de l'industrie guineenne.")
+                "le secteur est nettement plus tourné vers l'extérieur que la "
+                "moyenne de l'industrie guinéenne.")
 
-    section(f"Evolution · {annees[0]}–{annees[-1]}")
+    section(f"Évolution · {annees[0]}–{annees[-1]}")
     d = df_filtre.groupby("annee")[col].sum().reset_index()
     fig = px.line(d, x="annee", y=col, markers=True)
     fig.update_traces(line=dict(color=BAUXITE, width=2),
@@ -754,7 +754,7 @@ def page_analyse():
     fig.update_xaxes(dtick=1)
     st.plotly_chart(styliser(fig, 320, grille_y=True), use_container_width=True)
 
-    section(f"Croisement {'region' if champ_geo=='region' else 'region naturelle'} × secteur")
+    section(f"Croisement {'région' if champ_geo=='region' else 'région naturelle'} × secteur")
     # min_count=1 : une case sans aucune valeur renseignee reste vide (NaN)
     # au lieu d'etre comptee comme un zero, ce qui fausserait la lecture.
     pivot = (df_annee.groupby([champ_geo, "secteur_industriel"])[col]
@@ -767,18 +767,18 @@ def page_analyse():
     fig.update_layout(xaxis_title="", yaxis_title="",
                       coloraxis_colorbar=dict(title="", thickness=10))
     st.plotly_chart(styliser(fig, 420), use_container_width=True)
-    st.caption(f"Lecture : plus la case est foncee, plus « {titre} » est eleve. "
-               "n.d. : donnee non disponible (valeur manquante dans l'entrepot, "
-               "voir la page Qualite des donnees).")
+    st.caption(f"Lecture : plus la case est foncée, plus « {titre} » est élevé. "
+               "n.d. : donnée non disponible (valeur manquante dans l'entrepôt, "
+               "voir la page Qualité des données).")
 
 
 # =====================================================================
 #  PAGE : FICHE REGIONALE
 # =====================================================================
 def page_fiche():
-    region = st.selectbox("Region", regions)
-    entete(f"Fiche regionale · {region}",
-           f"Profil industriel du territoire · annee {annee_choisie}")
+    region = st.selectbox("Région", regions)
+    entete(f"Fiche régionale · {region}",
+           f"Profil industriel du territoire · année {annee_choisie}")
 
     d_reg = df[(df["region"] == region) & (df["annee"] == annee_choisie)]
     d_nat = df[df["annee"] == annee_choisie]
@@ -797,13 +797,13 @@ def page_fiche():
 
     c1, c2 = st.columns(2)
     with c1:
-        section("Repartition du chiffre d'affaires par secteur")
+        section("Répartition du chiffre d'affaires par secteur")
         d = (d_reg.groupby("secteur_industriel")["chiffre_affaires_milliards_gnf"]
              .sum().sort_values(ascending=False).reset_index())
         st.plotly_chart(barres_h(d, "chiffre_affaires_milliards_gnf",
                                  "secteur_industriel"), use_container_width=True)
     with c2:
-        section("Positionnement parmi les regions")
+        section("Positionnement parmi les régions")
         d = (d_nat.groupby("region")["chiffre_affaires_milliards_gnf"]
              .sum().sort_values(ascending=False).reset_index())
         d["mise_en_avant"] = np.where(d["region"] == region, BAUXITE, "#D9D6CE")
@@ -820,9 +820,9 @@ def page_fiche():
         fig.update_xaxes(showticklabels=False, showgrid=False,
                          range=[0, float(d["chiffre_affaires_milliards_gnf"].max()) * 1.20])
         st.plotly_chart(fig, use_container_width=True)
-        st.caption(f"La region {region} est mise en evidence.")
+        st.caption(f"La région {region} est mise en évidence.")
 
-    section(f"Evolution · {region}")
+    section(f"Évolution · {region}")
     ind = st.radio("Indicateur", ["chiffre_affaires_milliards_gnf", "emploi_direct",
                                   "nb_entreprises_actives"],
                    format_func=lambda c: LIBELLES[c], horizontal=True)
@@ -841,24 +841,24 @@ def page_fiche():
 #  PAGE : DIMENSIONS COMPLEMENTAIRES
 # =====================================================================
 def page_dimensions():
-    entete("Dimensions complementaires",
-           "Emploi, production, environnement et transformation numerique")
+    entete("Dimensions complémentaires",
+           "Emploi, production, environnement et transformation numérique")
 
     dim = st.selectbox("Dimension", list(DIMENSIONS.keys()))
     for col in DIMENSIONS[dim]:
         taux = df[col].notna().mean() * 100
         section(LIBELLES[col])
         if taux < 50:
-            st.warning(f"Indicateur peu renseigne — {taux:.0f} % des observations "
-                       "disponibles. Resultats donnes a titre indicatif.")
+            st.warning(f"Indicateur peu renseigné — {taux:.0f} % des observations "
+                       "disponibles. Résultats donnés à titre indicatif.")
         d = (df_filtre.groupby("region")[col].mean().dropna()
              .sort_values(ascending=False).reset_index())
         if d.empty:
-            st.info("Aucune donnee disponible pour cette selection.")
+            st.info("Aucune donnée disponible pour cette sélection.")
             continue
         st.plotly_chart(barres_h(d, col, "region", hauteur=300, decimales=1),
                         use_container_width=True)
-        st.caption("Moyenne par region sur la periode 2021-2025.")
+        st.caption("Moyenne par région sur la période 2021-2025.")
 
 
 # =====================================================================
@@ -878,17 +878,17 @@ def segmentation(data):
     agg["cluster"] = km.labels_
     ordre = (agg.groupby("cluster")["chiffre_affaires_milliards_gnf"]
              .mean().sort_values(ascending=False).index.tolist())
-    noms = ["Poles industriels majeurs", "Regions intermediaires",
-            "Regions moins industrialisees"]
+    noms = ["Pôles industriels majeurs", "Régions intermédiaires",
+            "Régions moins industrialisées"]
     agg["profil"] = agg["cluster"].map({c: noms[i] for i, c in enumerate(ordre)})
     return agg.reset_index()
 
 
 def page_avancee():
-    entete("Analyse avancee",
-           f"Correlations et segmentation · ensemble des donnees {annees[0]}–{annees[-1]}")
+    entete("Analyse avancée",
+           f"Corrélations et segmentation · ensemble des données {annees[0]}–{annees[-1]}")
 
-    section("Matrice de correlation des indicateurs")
+    section("Matrice de corrélation des indicateurs")
     ind = ["nb_entreprises_actives", "emploi_direct", "indice_production_industrielle",
            "chiffre_affaires_milliards_gnf", "valeur_ajoutee_milliards_gnf",
            "exportations_milliards_gnf", "investissement_milliards_gnf",
@@ -896,7 +896,7 @@ def page_avancee():
            "maturite_numerique_score_100"]
     ind = [c for c in ind if c in df.columns]
     if len(ind) < 2:
-        st.info("Pas assez d'indicateurs numeriques pour calculer des correlations.")
+        st.info("Pas assez d'indicateurs numériques pour calculer des corrélations.")
         return
     corr = df[ind].corr().round(2)
     noms = [LIBELLES[c].split(" (")[0] for c in ind]
@@ -909,22 +909,22 @@ def page_avancee():
                       coloraxis_colorbar=dict(title="r", thickness=10))
     fig.update_xaxes(tickangle=-40)
     st.plotly_chart(styliser(fig, 560), use_container_width=True)
-    st.info("Correlations les plus fortes : chiffre d'affaires ↔ investissement "
-            "(r = 0,90) et valeur ajoutee ↔ investissement (r = 0,87) — coherent "
-            "avec les resultats du chapitre 4 du memoire.")
+    st.info("Corrélations les plus fortes : chiffre d'affaires ↔ investissement "
+            "(r = 0,90) et valeur ajoutée ↔ investissement (r = 0,87) — cohérent "
+            "avec les résultats du chapitre 4 du mémoire.")
 
-    section("Segmentation des regions (k-means, 3 profils)")
+    section("Segmentation des régions (k-means, 3 profils)")
     _feats = ["chiffre_affaires_milliards_gnf", "exportations_milliards_gnf",
               "investissement_milliards_gnf", "taux_utilisation_capacite_pct",
               "maturite_numerique_score_100"]
     _absentes = [c for c in _feats if c not in df.columns]
     if _absentes:
         st.warning("Segmentation indisponible : variables absentes du jeu de "
-                   "donnees — " + ", ".join(_absentes) + ".")
+                   "données — " + ", ".join(_absentes) + ".")
         return
     if df["region"].nunique() < 3:
-        st.warning("Segmentation indisponible : au moins trois regions sont "
-                   "necessaires pour former trois profils.")
+        st.warning("Segmentation indisponible : au moins trois régions sont "
+                   "nécessaires pour former trois profils.")
         return
     seg = segmentation(df)
     fig = px.scatter(seg, x="chiffre_affaires_milliards_gnf", y="emploi_direct",
@@ -942,7 +942,7 @@ def page_avancee():
 
     st.markdown("**Composition des trois profils**")
     st.dataframe(pd.DataFrame([
-        {"Profil": p, "Regions": ", ".join(seg[seg.profil == p]["region"]),
+        {"Profil": p, "Régions": ", ".join(seg[seg.profil == p]["region"]),
          "CA moyen (Mds GNF)": round(seg[seg.profil == p]
                                      ["chiffre_affaires_milliards_gnf"].mean())}
         for p in COULEURS_PROFIL]), use_container_width=True, hide_index=True)
@@ -952,35 +952,35 @@ def page_avancee():
 #  PAGE : QUALITE DES DONNEES
 # =====================================================================
 def page_qualite():
-    entete("Qualite des donnees",
-           "Completude du jeu de donnees · volet gouvernance de l'observatoire")
+    entete("Qualité des données",
+           "Complétude du jeu de données · volet gouvernance de l'observatoire")
 
-    st.write("La gouvernance des donnees suppose de mesurer et de publier la qualite "
-             "de l'information diffusee. Chaque indicateur est evalue sur les "
-             f"{len(df)} observations du jeu de donnees.")
+    st.write("La gouvernance des données suppose de mesurer et de publier la qualité "
+             "de l'information diffusée. Chaque indicateur est évalué sur les "
+             f"{len(df)} observations du jeu de données.")
 
     def niveau(t):
-        return "Bonne" if t >= 80 else ("A surveiller" if t >= 50 else "Insuffisante")
+        return "Bonne" if t >= 80 else ("À surveiller" if t >= 50 else "Insuffisante")
 
     q = pd.DataFrame([{"Indicateur": lib,
-                       "Completude (%)": round(df[c].notna().mean() * 100, 1),
+                       "Complétude (%)": round(df[c].notna().mean() * 100, 1),
                        "Manquantes": int(df[c].isna().sum())}
                       for c, lib in LIBELLES.items()])
-    q["Niveau"] = q["Completude (%)"].apply(niveau)
-    q = q.sort_values("Completude (%)", ascending=False)
+    q["Niveau"] = q["Complétude (%)"].apply(niveau)
+    q = q.sort_values("Complétude (%)", ascending=False)
 
     n_ins = (q["Niveau"] == "Insuffisante").sum()
     carte_kpi([
-        ("Observations", formater(len(df)), "lignes du jeu de donnees"),
-        ("Indicateurs suivis", str(len(LIBELLES)), "variables documentees"),
-        ("Completude moyenne", f"{q['Completude (%)'].mean():.1f} %", "toutes variables"),
-        ("Indicateurs a renforcer", str(n_ins), "completude inferieure a 50 %"),
+        ("Observations", formater(len(df)), "lignes du jeu de données"),
+        ("Indicateurs suivis", str(len(LIBELLES)), "variables documentées"),
+        ("Complétude moyenne", f"{q['Complétude (%)'].mean():.1f} %", "toutes variables"),
+        ("Indicateurs à renforcer", str(n_ins), "complétude inférieure à 50 %"),
     ])
 
-    section("Completude par indicateur")
-    fig = px.bar(q, x="Completude (%)", y="Indicateur", orientation="h",
+    section("Complétude par indicateur")
+    fig = px.bar(q, x="Complétude (%)", y="Indicateur", orientation="h",
                  color="Niveau", color_discrete_map=STATUT,
-                 text=[nb_fr(v, 1) + " %" for v in q["Completude (%)"]])
+                 text=[nb_fr(v, 1) + " %" for v in q["Complétude (%)"]])
     fig.update_traces(texttemplate="%{text}", textposition="outside",
                       textfont=dict(size=11, color=ENCRE_2), cliponaxis=False,
                       marker=dict(cornerradius=4),
@@ -994,44 +994,44 @@ def page_qualite():
 
     # Le texte des limites est CALCULE, jamais fige : il suit toujours le
     # nombre reellement affiche dans la carte « Indicateurs a renforcer ».
-    faibles = q[q["Niveau"] == "Insuffisante"].sort_values("Completude (%)")
+    faibles = q[q["Niveau"] == "Insuffisante"].sort_values("Complétude (%)")
     if len(faibles):
         liste = ", ".join(f"{r['Indicateur'].split(' (')[0].lower()} "
-                          f"({nb_fr(r['Completude (%)'], 1)} %)"
+                          f"({nb_fr(r['Complétude (%)'], 1)} %)"
                           for _, r in faibles.iterrows())
-        accord = "indicateur presente" if len(faibles) == 1 else "indicateurs presentent"
-        st.warning(f"**Limites identifiees** — {len(faibles)} {accord} une completude "
-                   f"inferieure a 50 % des observations : {liste}. Leur collecte devra "
-                   "etre renforcee avant toute exploitation decisionnelle. Ces "
-                   "indicateurs n'etant produits par aucune source administrative "
-                   "existante, leur alimentation suppose une collecte primaire aupres "
-                   "des unites industrielles.")
+        accord = "indicateur présente" if len(faibles) == 1 else "indicateurs présentent"
+        st.warning(f"**Limites identifiées** — {len(faibles)} {accord} une complétude "
+                   f"inférieure à 50 % des observations : {liste}. Leur collecte devra "
+                   "être renforcée avant toute exploitation décisionnelle. Ces "
+                   "indicateurs n'étant produits par aucune source administrative "
+                   "existante, leur alimentation suppose une collecte primaire auprès "
+                   "des unités industrielles.")
     else:
-        st.success("**Aucun indicateur** ne presente une completude inferieure a 50 %.")
+        st.success("**Aucun indicateur** ne présente une complétude inférieure à 50 %.")
 
-    a_surveiller = q[q["Niveau"] == "A surveiller"]
+    a_surveiller = q[q["Niveau"] == "À surveiller"]
     if len(a_surveiller):
         liste2 = ", ".join(f"{r['Indicateur'].split(' (')[0].lower()} "
-                           f"({nb_fr(r['Completude (%)'], 1)} %)"
+                           f"({nb_fr(r['Complétude (%)'], 1)} %)"
                            for _, r in a_surveiller.iterrows())
-        st.info(f"**A surveiller** — completude comprise entre 50 et 80 % : {liste2}.")
+        st.info(f"**À surveiller** — complétude comprise entre 50 et 80 % : {liste2}.")
 
 
 # =====================================================================
 #  PAGE : DONNEES & INDICATEURS
 # =====================================================================
 def page_donnees():
-    entete("Donnees & indicateurs", "Consultation, export et definitions")
+    entete("Données & indicateurs", "Consultation, export et définitions")
 
-    section("Table des donnees")
+    section("Table des données")
     st.caption(f"{len(df_filtre)} lignes correspondant aux filtres actifs.")
     st.dataframe(df_filtre, use_container_width=True, height=420)
-    st.download_button("⬇️  Telecharger ces donnees (CSV)",
+    st.download_button("⬇️  Télécharger ces données (CSV)",
                        df_filtre.to_csv(index=False).encode("utf-8"),
                        "donnees_observatoire.csv", "text/csv")
 
     section("Dictionnaire des variables")
-    st.dataframe(pd.DataFrame([{"Variable": k, "Libelle": v}
+    st.dataframe(pd.DataFrame([{"Variable": k, "Libellé": v}
                                for k, v in LIBELLES.items()]),
                  use_container_width=True, hide_index=True)
 
@@ -1040,14 +1040,14 @@ def page_donnees():
 #  ROUTAGE
 # =====================================================================
 {"Accueil": page_accueil, "L'Observatoire": page_presentation,
- "Analyse regionale & sectorielle": page_analyse, "Fiche regionale": page_fiche,
- "Dimensions complementaires": page_dimensions, "Analyse avancee": page_avancee,
- "Qualite des donnees": page_qualite, "Donnees & indicateurs": page_donnees}[page]()
+ "Analyse régionale & sectorielle": page_analyse, "Fiche régionale": page_fiche,
+ "Dimensions complémentaires": page_dimensions, "Analyse avancée": page_avancee,
+ "Qualité des données": page_qualite, "Données & indicateurs": page_donnees}[page]()
 
 st.sidebar.divider()
-st.sidebar.caption("Observatoire National de l'Industrie de Guinee  \n"
-                   "Memoire M2 SID — Ansoumane CONTE  \n"
-                   "Universite Alioune Diop de Bambey  \n"
+st.sidebar.caption("Observatoire National de l'Industrie de Guinée  \n"
+                   "Mémoire M2 SID — Ansoumane CONTE  \n"
+                   "Université Alioune Diop de Bambey  \n"
                    "  \n"
-                   "**Prototype academique** — ne constitue pas un site officiel "
-                   "de la Republique de Guinee. Donnees de demonstration.")
+                   "**Prototype académique** — ne constitue pas un site officiel "
+                   "de la République de Guinée. Données de démonstration.")
