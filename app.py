@@ -8,7 +8,10 @@
 
 from pathlib import Path
 
+import datetime
 import hmac
+import os
+import tempfile
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -444,8 +447,12 @@ PAGES_INVEST = PAGES_PUBLIC + ["Analyse régionale & sectorielle", "Fiche régio
                                "Dimensions complémentaires"]
 PAGES_AUTORITE = PAGES_INVEST + ["Analyse avancée", "Qualité des données",
                                  "Données & indicateurs"]
+# L'administrateur des donnees n'herite d'aucun autre profil : son role releve de
+# l'alimentation de l'entrepot (ecriture), pas de la consultation (lecture).
+ADMIN = "Administrateur des données"
+PAGES_ADMIN = PAGES_PUBLIC + ["Qualité des données", "Alimentation de l'entrepôt"]
 DROITS = {"Grand public": PAGES_PUBLIC, "Investisseurs et bailleurs (PTF)": PAGES_INVEST,
-          "Pouvoirs publics": PAGES_AUTORITE}
+          "Pouvoirs publics": PAGES_AUTORITE, ADMIN: PAGES_ADMIN}
 # Les comptes de demonstration ne figurent pas dans le code : ils sont lus
 # dans les "secrets" de l'application (Streamlit Cloud > Settings > Secrets,
 # ou fichier local .streamlit/secrets.toml exclu du depot). Aucun identifiant
@@ -484,6 +491,7 @@ if st.session_state["profil"] == "Grand public":
         # comparaison a duree constante : ne revele pas la longueur du mot de passe
         if c and hmac.compare_digest(str(c["mdp"]), str(mdp)):
             st.session_state["profil"] = c["profil"]
+            st.session_state["utilisateur"] = ident.strip().lower()
             st.rerun()
         else:
             st.sidebar.error("Identifiant ou mot de passe incorrect.")
@@ -491,6 +499,8 @@ else:
     st.sidebar.success(f"Connecté : {st.session_state['profil']}")
     if st.sidebar.button("Se déconnecter", use_container_width=True):
         st.session_state["profil"] = "Grand public"
+        st.session_state.pop("utilisateur", None)
+        st.session_state.pop("rapport_etl", None)
         st.rerun()
 
 profil = st.session_state["profil"]
@@ -677,7 +687,10 @@ def page_presentation():
          "Accès": "Sur inscription",
          "Périmètre": "Analyses détaillées par région, secteur et dimension"},
         {"Profil": "Pouvoirs publics", "Accès": "Authentifié",
-         "Périmètre": "Accès complet : analyses avancées, qualité, export"}]),
+         "Périmètre": "Accès complet : analyses avancées, qualité, export"},
+        {"Profil": "Administrateur des données", "Accès": "Authentifié",
+         "Périmètre": "Alimentation de l'entrepôt (chaîne ETL) ; seul profil "
+                      "disposant du droit d'écriture"}]),
         use_container_width=True, hide_index=True)
     st.caption("Le mécanisme d'authentification implémenté ici a valeur de "
                "démonstration : il illustre la logique d'accès différenciés décrite "
@@ -1080,12 +1093,90 @@ def page_donnees():
 
 
 # =====================================================================
+#  PAGE : ALIMENTATION DE L'ENTREPOT (profil administrateur uniquement)
+# =====================================================================
+JOURNAL = "journal_chargements.csv"
+
+
+def lire_journal():
+    if not Path(JOURNAL).exists():
+        return pd.DataFrame(columns=["Date", "Utilisateur", "Fichier", "Résultat"])
+    return pd.read_csv(JOURNAL, encoding="utf-8")
+
+
+def ecrire_journal(utilisateur, fichier, succes):
+    """Trace de chaque chargement : qui, quand, quel fichier, quel resultat."""
+    ligne = pd.DataFrame([{
+        "Date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "Utilisateur": utilisateur, "Fichier": fichier,
+        "Résultat": "Accepté" if succes else "Rejeté"}])
+    ligne.to_csv(JOURNAL, mode="a", header=not Path(JOURNAL).exists(),
+                 index=False, encoding="utf-8")
+
+
+def page_alimentation():
+    entete("Alimentation de l'entrepôt",
+           "Chaîne ETL · réservée à l'administrateur des données")
+    # Defense en profondeur : meme si la navigation est contournee, la page
+    # elle-meme refuse tout acces a un autre profil.
+    if st.session_state.get("profil") != ADMIN:
+        st.error("Accès refusé : cette page est réservée à l'administrateur "
+                 "des données.")
+        return
+
+    section("État de l'entrepôt")
+    carte_kpi([
+        ("Observations", formater(len(df)), "lignes de la table de faits"),
+        ("Période", f"{annees[0]}–{annees[-1]}", f"{len(annees)} années"),
+        ("Dernière mise à jour", datetime.datetime.fromtimestamp(
+            Path(ENTREPOT).stat().st_mtime).strftime("%d/%m/%Y %H:%M"),
+         "date du fichier observatoire.db"),
+    ])
+
+    section("Nouveau chargement")
+    st.write("Téléversez le fichier source brut (.xlsx). La chaîne ETL l'extrait, "
+             "le nettoie, le charge dans un entrepôt temporaire et vérifie qu'il "
+             "restitue exactement les valeurs sources. **L'entrepôt en service "
+             "n'est remplacé que si ce contrôle est concluant** ; l'ancienne "
+             "version est conservée.")
+    fichier = st.file_uploader("Fichier source", type=["xlsx"])
+    if fichier is not None and st.button("Lancer le chargement (ETL)"):
+        import etl_observatoire as etl
+        with tempfile.TemporaryDirectory() as dossier:
+            chemin = os.path.join(dossier, Path(fichier.name).name)
+            Path(chemin).write_bytes(fichier.getvalue())
+            with st.spinner("Chargement en cours…"):
+                succes, rapport = etl.executer(chemin, ENTREPOT)
+        ecrire_journal(st.session_state.get("utilisateur", "?"),
+                       fichier.name, succes)
+        st.session_state["rapport_etl"] = (succes, rapport)
+        if succes:
+            st.cache_data.clear()
+        st.rerun()
+
+    if "rapport_etl" in st.session_state:
+        succes, rapport = st.session_state["rapport_etl"]
+        (st.success if succes else st.error)(
+            "Chargement accepté : l'entrepôt a été mis à jour." if succes
+            else "Chargement rejeté : l'entrepôt en service est inchangé.")
+        st.code(rapport, language="text")
+
+    section("Journal des chargements")
+    journal = lire_journal()
+    if journal.empty:
+        st.info("Aucun chargement enregistré pour le moment.")
+    else:
+        st.dataframe(journal.iloc[::-1], use_container_width=True, hide_index=True)
+
+
+# =====================================================================
 #  ROUTAGE
 # =====================================================================
 {"Accueil": page_accueil, "L'Observatoire": page_presentation,
  "Analyse régionale & sectorielle": page_analyse, "Fiche régionale": page_fiche,
  "Dimensions complémentaires": page_dimensions, "Analyse avancée": page_avancee,
- "Qualité des données": page_qualite, "Données & indicateurs": page_donnees}[page]()
+ "Qualité des données": page_qualite, "Données & indicateurs": page_donnees,
+ "Alimentation de l'entrepôt": page_alimentation}[page]()
 
 st.sidebar.divider()
 st.sidebar.caption("Observatoire National de l'Industrie de Guinée  \n"

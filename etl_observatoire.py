@@ -221,9 +221,54 @@ def controler(con, f):
     return ok
 
 
+COLONNES_SOURCE = (["annee", "region", "secteur_industriel"]
+                   + COLONNES_ENTIERES + COLONNES_NUMERIQUES)
+
+
+def executer(source, entrepot=ENTREPOT):
+    """Rejoue la chaine E-T-L complete et ne remplace l'entrepot que si le
+    controle de non-alteration est bon. Renvoie (succes, rapport).
+    Utilisee par la page « Alimentation » du portail (profil administrateur)
+    comme par la ligne de commande."""
+    import contextlib
+    import io
+    import shutil
+
+    tampon = io.StringIO()
+    temporaire = entrepot + ".tmp"
+    succes = False
+    with contextlib.redirect_stdout(tampon):
+        try:
+            if os.path.exists(temporaire):
+                os.remove(temporaire)
+            brut = extraire(source)
+            absentes = [c for c in COLONNES_SOURCE if c not in brut.columns]
+            if absentes:
+                raise ValueError("colonnes absentes du fichier : "
+                                 + ", ".join(absentes))
+            propre = transformer(brut)
+            con = charger(propre, temporaire)
+            succes = controler(con, propre)
+            con.close()
+            if succes:
+                if os.path.exists(entrepot):
+                    shutil.copy2(entrepot, entrepot + ".bak")  # copie de repli
+                os.replace(temporaire, entrepot)
+                print("Entrepôt remplacé ; ancienne version conservée (.bak).")
+            else:
+                print("Entrepôt existant conservé : le chargement est rejeté.")
+        except Exception as e:
+            print(f"ÉCHEC : {e}")
+            print("Entrepôt existant conservé : le chargement est rejeté.")
+        finally:
+            if os.path.exists(temporaire):
+                try:
+                    os.remove(temporaire)
+                except OSError:
+                    pass
+    return succes, tampon.getvalue()
+
+
 if __name__ == "__main__":
-    brut = extraire(FICHIER_SOURCE)
-    propre = transformer(brut)
-    connexion = charger(propre, ENTREPOT)
-    controler(connexion, propre)
-    connexion.close()
+    ok, rapport = executer(FICHIER_SOURCE, ENTREPOT)
+    print(rapport)
