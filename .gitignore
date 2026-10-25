@@ -7,3 +7,6 @@ venv/
 Thumbs.db
 ~$*
 *.tmp
+.streamlit/secrets.toml
+journal_chargements.csv
+*.bak
