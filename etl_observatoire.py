@@ -213,9 +213,15 @@ def controler(con, f):
     """
     ent, emp, ca = con.execute(req).fetchone()
     src = f[f["annee"] == 2025]
+    # Nombre de lignes : regions x secteurs x annees, sans manque ni recouvrement
+    nb = con.execute("SELECT COUNT(*) FROM Fait_industrie").fetchone()[0]
+    attendu = (f["region"].nunique() * f["secteur_industriel"].nunique()
+               * f["annee"].nunique())
     ok = (ent == src["nb_entreprises_actives"].sum()
           and emp == src["emploi_direct"].sum()
-          and ca == round(src["chiffre_affaires_milliards_gnf"].sum()))
+          and ca == round(src["chiffre_affaires_milliards_gnf"].sum())
+          and nb == attendu == len(f))
+    print(f"Lignes : {nb} (attendu : {attendu})")
     print(f"2025 - entreprises : {ent} | emploi : {emp} | CA : {ca} Mds GNF")
     print("Entrepôt conforme au fichier source." if ok else "ÉCART DÉTECTÉ")
     return ok
